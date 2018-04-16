@@ -1,6 +1,6 @@
 # Movescount Backup
 
-Movescount Backup is s simple library that can download move records from **Suunto Movescount**. I creted is just because there is no official way how to create a backup of all your moves and a optional possibility yo migrate them to other service such as **Garmin** or **Strava**.
+Movescount Backup is s simple library that can download move records from **Suunto Movescount**. I have created it just because there is no official way how to create a backup of all your moves and an optional possibility to migrate them to other service such as **Garmin** or **Strava**.
 
 ## Version
 
@@ -16,7 +16,7 @@ Install-Package MovescountBackup -Version 1.0.1
 
 The solution consists of the following projects:
 
-- **MovescountBackup.Lib** is the mail library containing client for downloading, main downloader, models and other services.
+- **MovescountBackup.Lib** is the main library containing client for downloading, main downloader, models and other services.
 
 - **MovescountBackup.Console** is just a sample that can be run locally.
 
@@ -49,12 +49,12 @@ The main project
 ### Client.cs
 
 Client is the class responsible for downloading data from Movescount. Because there is only need to get list of moves and one particular move with details,
-there are no oather calls, suich as crate new move, update move, etc. But, it can be extended to a full Movescount API client.
-The only problem is that the API spec is not public, so some inpection is required (e.g., searching on GitHub).
+there are no other calls, such as *create new move*, *update move*, etc. But it can be extended to a full Movescount API client.
+The only problem is that the API specification is not public, so some inspection is required (e.g., searching on GitHub).
 
 ### Downloader.cs
 
-A class that uses Client to download single or multiple moves and store them to local disk (FileSystemStorage) or Azure Blob Store (CloudStorage).
+A class that uses Client to download single or multiple moves and store them to local disk (see `FileSystemStorage.cs`) or Azure Blob Store (see `CloudStorage.cs`).
 A sample Downloader usage is as follows (see `MovescountBackup.Console.Program.cs`):
 
 ```csharp
@@ -68,7 +68,7 @@ Console.WriteLine($"{moves.Count} moves have been downloaded.");
 
 ## Deployment
 
-You can use this lib to be run manually (`MovescountBackup.Console.Program.cs`) or you can create, e.g., a *Azure function* or *Lambda function on AWS*, that can run periodically.
+You can use this libraly to be run manually (`MovescountBackup.Console.Program.cs`) or you can create, e.g., a *Azure function* or *Lambda function on AWS*, that can run periodically.
 
 ## Contributing
 
