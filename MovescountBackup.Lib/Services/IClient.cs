@@ -34,6 +34,6 @@ namespace MovescountBackup.Lib.Services
         /// <param name="exportFormat">The export format.</param>
         /// <param name="cookieValue">The cookie value.</param>
         /// <returns>GPS data string</returns>
-        Task<string> GetGspDataFile(long moveId, ExportFormatEnum exportFormat, string cookieValue);
+        Task<string> GetGpsDataFile(long moveId, ExportFormatEnum exportFormat, string cookieValue);
     }
 }

@@ -13,16 +13,21 @@ using Newtonsoft.Json.Linq;
 namespace MovescountBackup.Lib.Services
 {
     /// <summary>
-    /// 
+    /// Movescount downloader
     /// </summary>
-    /// TODO Edit XML Comment Template for Downloader
-    public class Downloader
+    public class Downloader : IDownloader
     {
         // ReSharper disable once MemberCanBePrivate.Global
         /// <summary>
         /// The move data file
         /// </summary>
         public const string MoveDataFile = "move_data.json";
+
+        // ReSharper disable once MemberCanBePrivate.Global
+        /// <summary>
+        /// The move data file
+        /// </summary>
+        public const string GpsDataFile = "gps_data";
 
         /// <summary>
         /// Gets the authentication query.
@@ -111,7 +116,7 @@ namespace MovescountBackup.Lib.Services
         /// <returns>Data string</returns>
         private async Task<string> GetAndStoreData(string urlPart, string fileName)
         {
-            this.logger.LogInformation($"Downloading of {urlPart} started");
+            this.logger.LogInformation($"Downloading of {urlPart} started.");
             var url = new Uri(new Uri(Client.BaseUrl), urlPart);
             string data;
             using (var httpClient = new HttpClient())
@@ -120,7 +125,7 @@ namespace MovescountBackup.Lib.Services
             }
 
             await this.storage.StoreData(fileName, data);
-            this.logger.LogInformation($"Downloading of {urlPart} done");
+            this.logger.LogInformation($"Downloading of {urlPart} done.");
             return data;
         }
 
@@ -132,20 +137,20 @@ namespace MovescountBackup.Lib.Services
         /// <param name="exportFormat">The export format.</param>
         /// <param name="fileName">Name of the file.</param>
         /// <returns>Task result</returns>
-        private async Task GetAndStoreGpsData(long moveId, string cookieValue, ExportFormatEnum exportFormat,
+        public async Task GetAndStoreGpsData(long moveId, string cookieValue, ExportFormatEnum exportFormat,
             string fileName)
         {
             if (string.IsNullOrWhiteSpace(configuration.CookieValue))
             {
-                this.logger.LogWarning("Cookie values is not set - could not download GPS data");
+                this.logger.LogWarning("Cookie values is not set - could not download GPS data.");
                 return;
             }
             
-            this.logger.LogInformation($"Downloading of GPS data in {exportFormat.ToString()} format started");
-            var data = await this.client.GetGspDataFile(moveId, exportFormat, cookieValue);
+            this.logger.LogInformation($"Downloading of GPS data in {exportFormat.ToString()} format started.");
+            var data = await this.client.GetGpsDataFile(moveId, exportFormat, cookieValue);
 
             await this.storage.StoreData(fileName, data);
-            this.logger.LogInformation($"Downloading of GPS data in {exportFormat.ToString()} format done");
+            this.logger.LogInformation($"Downloading of GPS data in {exportFormat.ToString()} format done.");
         }
 
         /// <summary>
@@ -161,15 +166,15 @@ namespace MovescountBackup.Lib.Services
         /// </summary>
         /// <param name="exportFormat">The export format.</param>
         /// <returns>GPS file name</returns>
-        private static string CreateGpsFileMapName(ExportFormatEnum exportFormat) =>
-            $"gps_data.{exportFormat.ToString().ToLower()}";
+        public string CreateGpsFileMapName(ExportFormatEnum exportFormat) =>
+            $"{GpsDataFile}.{exportFormat.ToString().ToLower()}";
 
         /// <summary>
         /// Downloads the move.
         /// </summary>
         /// <param name="moveId">The move identifier.</param>
         /// <returns>Move instance</returns>
-        private async Task<Move> DownloadMove(long moveId)
+        public async Task<Move> DownloadMove(long moveId)
         {
             this.logger.LogInformation($"Downloading of move {moveId} started.");
             var moveDir = string.IsNullOrWhiteSpace(this.configuration.BackupDir) ? moveId.ToString() : Path.Combine(this.configuration.BackupDir, moveId.ToString());
@@ -198,16 +203,16 @@ namespace MovescountBackup.Lib.Services
             await this.GetAndStoreData($"{move.SamplesURI}?{this.AuthQuery}",
                 CreateFileName(moveDir, "samples_data.json"));
 
-            await this.GetAndStoreGpsData(moveId, this.configuration.CookieValue, ExportFormatEnum.Kml,
-                CreateFileName(moveDir, CreateGpsFileMapName(ExportFormatEnum.Kml)));
-            await this.GetAndStoreGpsData(moveId, this.configuration.CookieValue, ExportFormatEnum.Gpx,
-                CreateFileName(moveDir, CreateGpsFileMapName(ExportFormatEnum.Gpx)));
-            await this.GetAndStoreGpsData(moveId, this.configuration.CookieValue, ExportFormatEnum.Xlsx,
-                CreateFileName(moveDir, CreateGpsFileMapName(ExportFormatEnum.Xlsx)));
-            await this.GetAndStoreGpsData(moveId, this.configuration.CookieValue, ExportFormatEnum.Fit,
-                CreateFileName(moveDir, CreateGpsFileMapName(ExportFormatEnum.Fit)));
-            await this.GetAndStoreGpsData(moveId, this.configuration.CookieValue, ExportFormatEnum.Tcx,
-                CreateFileName(moveDir, CreateGpsFileMapName(ExportFormatEnum.Tcx)));
+            foreach (var exportFormat in new ExportFormatEnum[] {
+                ExportFormatEnum.Kml,
+                ExportFormatEnum.Gpx,
+                ExportFormatEnum.Xlsx,
+                ExportFormatEnum.Fit,
+                ExportFormatEnum.Tcx
+            })
+            {
+                await this.GetAndStoreGpsData(moveId, this.configuration.CookieValue, exportFormat, CreateFileName(moveDir, CreateGpsFileMapName(exportFormat)));
+            }
 
             var mediaResponse = await this.GetAndStoreData($"{move.MediaResourcesURI}?{this.AuthQuery}",
                 CreateFileName(moveDir, "media_data.json"));

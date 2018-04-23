@@ -93,7 +93,7 @@ namespace MovescountBackup.Lib.Services
         /// <returns>
         /// GPS data string
         /// </returns>
-        public async Task<string> GetGspDataFile(long moveId, ExportFormatEnum exportFormat, string cookieValue)
+        public async Task<string> GetGpsDataFile(long moveId, ExportFormatEnum exportFormat, string cookieValue)
         {
             var url = string.Format(ExportUrl, moveId, exportFormat.ToString().ToLower());
             this.logger.LogInformation($"Downloading of GPS data of move {moveId} in {exportFormat.ToString()} format");
@@ -111,14 +111,15 @@ namespace MovescountBackup.Lib.Services
         /// <param name="url">The URL.</param>
         /// <param name="setupClient">The setup client.</param>
         /// <returns>Type instance</returns>
-        private async Task<T> ExecuteUrlGetRequest<T>(string url, Action<HttpClient> setupClient = null)
+        private async Task<T> ExecuteUrlGetRequest<T>(string url, Action<HttpClient> setupClient = null) where T : class
         {
             try
             {
                 using (var httpClient = new HttpClient())
                 {
+                    setupClient?.Invoke(httpClient);
                     var data = await httpClient.GetStringAsync(url);
-                    return JsonConvert.DeserializeObject<T>(data);
+                    return typeof(T) == typeof(string) ? data as T : JsonConvert.DeserializeObject<T>(data);
                 }
             }
             catch (HttpRequestException hrex)
