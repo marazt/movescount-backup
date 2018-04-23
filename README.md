@@ -4,12 +4,12 @@ Movescount Backup is s simple library that can download move records from **Suun
 
 ## Version
 
-- **Version 1.0.1** - 2018-03-15
+- **Version 1.0.2** - 2018-03-23
 
 ### Getting Started/Installing
 
 ```ps
-PM> Install-Package MovescountBackup -Version 1.0.1
+PM> Install-Package MovescountBackup -Version 1.0.2
 ```
 
 ## Project Description
